@@ -1,75 +1,81 @@
-import axios from 'axios';
-import { useEffect, useState } from 'react';
-import Table from 'react-bootstrap/Table';
-import { fetchAllUser } from '../sevices/UserSevices';
+import axios from "axios";
+import { useEffect, useState } from "react";
+import Table from "react-bootstrap/Table";
+import { fetchAllUser } from "../sevices/UserSevices";
+import ReactPaginate from "react-paginate";
 
 const TableUsers = (props) => {
+  const [listUser, setListUser] = useState([]);
+  const [totalUsers, setTotalUsers] = useState(0);
+  const [totalPages, setTotalPages] = useState(0);
 
-    const [listUser, setListUser] = useState([]);
+  useEffect(() => {
+    //call apis
 
-    useEffect(()=> {
-        //call apis 
+    getUser(1);
+  }, []);
 
-        getUser();
-    }, [])
+  const getUser = async (page) => {
+    let res = await fetchAllUser(page);
 
-    const getUser = async () =>{
-        let res = await fetchAllUser();
-
-        if(res && res.data.data){
-            setListUser(res.data.data)
-        }
-        console.log(">>> checkres: ", res)
+    if (res && res.data) {
+      setTotalUsers(res.total);
+      setListUser(res.data);
+      setTotalPages(res.total_pages);
     }
+  };
 
-    console.log(listUser);
+  const handlePageClick = (event) => {
+    console.log("event lib:  ", event);
+    getUser(+event.selected + 1);
+  };
 
-    // avatar
-    // : 
-    // "https://reqres.in/img/faces/1-image.jpg"
-    // email
-    // : 
-    // "george.bluth@reqres.in"
-    // first_name
-    // : 
-    // "George"
-    // id
-    // : 
-    // 1
-    // last_name
-    // : 
-    // "Bluth"
-    
-
-    return (<>
-        <Table striped bordered hover>
+  return (
+    <>
+      <Table striped bordered hover>
         <thead>
-            <tr>
+          <tr>
             <th>ID</th>
             <th>Email</th>
             <th>First name</th>
             <th>Last name</th>
-            </tr>
+          </tr>
         </thead>
         <tbody>
-            {listUser && listUser.length > 0 &&
-            
+          {listUser &&
+            listUser.length > 0 &&
             listUser.map((item, index) => {
-                return(
-                    <tr key={`user-${index}`}>
-                        <td>{item.id}</td>
-                        <td>{item.email}</td>
-                        <td>{item.first_name}</td>
-                        <td>{item.last_name}</td>
-                    </tr>
-                )
-            })
-            }
-            
-            
+              return (
+                <tr key={`user-${index}`}>
+                  <td>{item.id}</td>
+                  <td>{item.email}</td>
+                  <td>{item.first_name}</td>
+                  <td>{item.last_name}</td>
+                </tr>
+              );
+            })}
         </tbody>
-        </Table>
-    </>)
-}
+      </Table>
+      <ReactPaginate
+        breakLabel="..."
+        nextLabel="next >"
+        onPageChange={handlePageClick}
+        pageRangeDisplayed={5}
+        pageCount={totalPages}
+        previousLabel="< previous"
+        pageClassName="page-item"
+        pageLinkClassName="page-link"
+        previousClassName="page-item"
+        previousLinkClassName="page-link"
+        nextClassName="page-item"
+        nextLinkClassName="page-link"
+        breakClassName="page-item"
+        breakLinkclassName="page-link"
+        containerClassName="pagination"
+        activeClassName="active"
+      />
+    </>
+  );
+};
 
 export default TableUsers;
